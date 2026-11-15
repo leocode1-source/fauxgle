@@ -277,7 +277,9 @@ def search():
                     ddgs.text(query, region="fr-fr", max_results=10)
                 )
         except Exception as e:
-            error = f"Erreur lors de la récupération des résultats : {e}"
+    app.logger.exception("Erreur de recherche")
+    error = "Une erreur est survenue. Réessaie plus tard."
+            
 
     return render_template_string(
         RESULTS_TEMPLATE,
@@ -288,4 +290,4 @@ def search():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000)
