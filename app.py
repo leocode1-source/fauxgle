@@ -1,5 +1,7 @@
 import logging
+import re
 import time
+import unicodedata
 from collections import defaultdict, deque
 from urllib.parse import urlparse
 
@@ -80,7 +82,7 @@ button:hover, .button:hover { background: #f1f3f4; }
     font-family: monospace; padding: 10vh 8vw;
 }
 .hacker h1 { color: #ff4545; }
-.explode { animation: shake .12s infinite; }
+.explode, body.explode { animation: shake .12s infinite; }
 @keyframes shake {
     0% { transform: translate(0,0) rotate(0); }
     25% { transform: translate(3px,-2px) rotate(.3deg); }
@@ -88,6 +90,79 @@ button:hover, .button:hover { background: #f1f3f4; }
     75% { transform: translate(2px,3px) rotate(.2deg); }
     100% { transform: translate(-2px,-3px) rotate(0); }
 }
+
+/* Effets spéciaux des Easter Eggs */
+body.rainbow { animation: rainbow-bg 2s linear infinite; }
+body.glitch .message { animation: glitch 0.18s steps(2) infinite; text-shadow: 3px 0 #ff2d75, -3px 0 #00e5ff; }
+body.spin .message { animation: spin 2.8s ease-in-out infinite; }
+body.invert { animation: invert-colors 1.4s steps(2) infinite; }
+body.zoom .message { animation: zoom-pulse 1.1s ease-in-out infinite alternate; }
+body.bounce .message { animation: bounce 0.7s ease-in-out infinite alternate; }
+body.neon { background: #080018; color: #fff; }
+body.neon .message { color: #fff; text-shadow: 0 0 7px #fff, 0 0 18px #e600ff, 0 0 35px #00e5ff; }
+body.neon .button { border-color: #e600ff; background: #18002c; color: white; }
+body.blackout { background: #050505; color: #fff; }
+body.blackout .creator { color: #aaa; }
+body.blackout .button { background: #222; color: #fff; border-color: #555; }
+body.ghost { background: #e9f4ff; color: #526477; }
+body.ghost .message { opacity: .55; animation: ghost-float 2.2s ease-in-out infinite alternate; }
+body.earthquake { animation: quake .09s linear infinite; }
+body.portal { background: radial-gradient(circle, #5425a8 0%, #13072d 48%, #030008 100%); color: white; }
+body.portal .message { color: white; animation: portal-pulse 1.5s ease-in-out infinite alternate; }
+body.portal .button { background: #31106a; color: white; border-color: #9b72ff; }
+body.disco { background: #111; color: white; animation: disco-bg .65s steps(2) infinite; }
+body.disco .message { animation: bounce .55s ease-in-out infinite alternate; }
+body.disco .button { background: #222; color: white; border-color: #fff; }
+body.flood { background: linear-gradient(180deg, #bdeeff, #168ac4, #064b91); color: white; }
+body.flood .message { animation: wave 1.8s ease-in-out infinite; }
+body.flood .button { background: #07558d; color: white; border-color: #bdeeff; }
+body.mirror { transform: scaleX(-1); }
+body.tornado { background: #e9edf2; }
+body.tornado .message { animation: spin 4s linear infinite; }
+body.fire { background: radial-gradient(ellipse at bottom, #ff7b00, #8e1600 48%, #210000); color: #fff; }
+body.fire .message { color: #fff; text-shadow: 0 0 8px #ffb000, 0 0 22px #ff3c00; animation: fire-flicker .22s infinite alternate; }
+body.fire .button { background: #5b1200; color: #fff; border-color: #ffb000; }
+body.ice { background: linear-gradient(145deg, #e8fcff, #7ed9f5, #d6f3ff); color: #073c59; }
+body.ice .message { text-shadow: 0 0 12px white; animation: ice-pulse 1.4s infinite alternate; }
+body.pixel { background: #111; color: #5cff5c; font-family: monospace; }
+body.pixel .message { border: 4px dashed #5cff5c; padding: 24px; box-shadow: 0 0 0 8px #111, 0 0 0 12px #5cff5c; }
+body.alert { background: #310000; color: white; animation: alert-bg .8s steps(2) infinite; }
+body.alert .message { color: white; }
+body.alert .button { background: #fff; color: #900; }
+body.float { background: #f5f0ff; }
+body.float .message { animation: ghost-float 1.6s ease-in-out infinite alternate; }
+body.vortex { background: radial-gradient(circle, #111 5%, #42126f 28%, #090016 70%); color: white; }
+body.vortex .message { color: white; animation: spin 6s linear infinite; }
+body.vortex .button { background: #2a0b48; color: white; border-color: #a86bff; }
+body.confetti { overflow-x: hidden; }
+body.confetti::before, body.confetti::after { content: "✦  ✧  •  ✦  ✧  •  ✦"; position: fixed; left: 0; width: 100%; font-size: 34px; letter-spacing: 18px; pointer-events: none; animation: confetti-fall 2.5s linear infinite; }
+body.confetti::before { top: -30px; }
+body.confetti::after { top: -100px; animation-delay: -1.2s; }
+body.shockwave .message { animation: shockwave 1.2s ease-out infinite; }
+body.moonwalk .message { animation: moonwalk 2.4s ease-in-out infinite alternate; }
+body.matrixrain { background: #001006; color: #52ff78; font-family: monospace; }
+body.matrixrain .message { color: #52ff78; text-shadow: 0 0 8px #52ff78; }
+@keyframes rainbow-bg { 0%{background:#ffb3ba} 20%{background:#ffdfba} 40%{background:#ffffba} 60%{background:#baffc9} 80%{background:#bae1ff} 100%{background:#e2baff} }
+@keyframes glitch { 0%{transform:translate(2px,-1px)} 50%{transform:translate(-2px,1px)} 100%{transform:translate(1px,2px)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes invert-colors { 50%{filter:invert(1)} }
+@keyframes zoom-pulse { to{transform:scale(1.12)} }
+@keyframes bounce { to{transform:translateY(-22px) rotate(-1deg)} }
+@keyframes ghost-float { to{transform:translateY(-18px);opacity:.9} }
+@keyframes quake { 0%{transform:translate(0,0)} 25%{transform:translate(4px,-3px)} 50%{transform:translate(-4px,3px)} 75%{transform:translate(3px,4px)} 100%{transform:translate(-3px,-4px)} }
+@keyframes portal-pulse { to{transform:scale(1.04);filter:hue-rotate(50deg)} }
+@keyframes disco-bg { 0%{background:#251044} 25%{background:#064b4b} 50%{background:#54102b} 75%{background:#303b08} 100%{background:#251044} }
+@keyframes wave { 0%,100%{transform:translateY(0) skewX(0)} 50%{transform:translateY(-12px) skewX(-2deg)} }
+@keyframes fire-flicker { from{transform:translateY(1px) scale(1)} to{transform:translateY(-2px) scale(1.02)} }
+@keyframes ice-pulse { to{filter:brightness(1.2);transform:scale(1.03)} }
+@keyframes alert-bg { 0%{background:#310000} 100%{background:#a00000} }
+@keyframes confetti-fall { to{transform:translateY(110vh) rotate(360deg)} }
+@keyframes shockwave { 0%{transform:scale(.85);opacity:.6} 70%{transform:scale(1.08);opacity:1} 100%{transform:scale(1);opacity:1} }
+@keyframes moonwalk { from{transform:translateX(-18px)} to{transform:translateX(18px)} }
+@media (prefers-reduced-motion: reduce) {
+  body, body * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+}
+
 @media (max-width: 600px) {
     .logo { font-size: 62px; }
     .header { gap: 12px; padding-top: 55px; }
@@ -221,7 +296,7 @@ EASTER_EGGS = {
     'merci': ('💛', 'Avec plaisir !', 'Reviens quand tu veux sur Fauxgle.'),
     'au revoir': ('👋', 'À la prochaine !', 'Fauxgle gardera ta place au chaud.'),
     "je m'ennuie": ('🎲', 'Mission anti-ennui', "Trouve cinq autres Easter Eggs sans demander d'indice."),
-    'aide': ('🆘', "Besoin d'aide ?", 'Essaie matrix, python, pizza, 42 ou Chuck Norris.'),
+    'aide': ('🆘', "Besoin d'aide ?", 'Essaie matrix, python, explode, disco ou supernova.'),
     'aide moi': ('🛟', 'Fauxgle à la rescousse', 'Premier conseil : ne tape surtout pas Google. 😏'),
     'qui suis je': ('🪞', 'Bonne question...', 'Tu es la personne qui vient de taper cette recherche.'),
     'la vie': ('🌱', 'La vie est belle', 'Surtout quand le Wi-Fi fonctionne.'),
@@ -312,6 +387,73 @@ EASTER_EGGS = {
     'je suis le boss': ('😎', 'On a trouvé le patron', 'Mais Léo reste le grand chef de Fauxgle.'),
 }
 
+
+
+# Alias accentués et variantes courantes.
+EASTER_EGGS.update({
+    "éléphant": EASTER_EGGS["elephant"],
+    "café": EASTER_EGGS["cafe"],
+    "vélo": EASTER_EGGS["velo"],
+    "trésor": EASTER_EGGS["tresor"],
+    "fantôme": EASTER_EGGS["fantome"],
+    "arc-en-ciel": EASTER_EGGS["arc en ciel"],
+    "poisson d'avril": EASTER_EGGS["poisson d avril"],
+    "je m’ennuie": EASTER_EGGS["je m'ennuie"],
+})
+
+# Easter Eggs spéciaux : chaque commande déclenche une mise en scène CSS.
+SPECIAL_EGGS = {
+    "rainbow": ("🌈", "MODE ARC-EN-CIEL !", "Fauxgle vient de repeindre ton écran.", "rainbow"),
+    "glitch": ("👾", "ERREUR... OU PAS ?", "L'affichage fait des siennes. Pas de panique, c'est un effet spécial.", "glitch"),
+    "spin": ("🌀", "ÇA TOURNE !", "La page fait un tour sur elle-même. Garde les yeux ouverts !", "spin"),
+    "invert": ("🙃", "MONDE À L'ENVERS", "Tout est inversé... enfin presque.", "invert"),
+    "zoom": ("🔎", "ZOOM MAXIMUM", "Fauxgle se rapproche pour mieux te voir chercher.", "zoom"),
+    "bounce": ("🏀", "MODE REBOND", "La page n'arrive plus à tenir en place.", "bounce"),
+    "neon": ("💜", "F AUXGLE NÉON", "Bienvenue dans le futur lumineux du moteur de recherche.", "neon"),
+    "blackout": ("🌑", "BLACKOUT", "Les lumières se sont éteintes. Heureusement, le bouton retour brille encore.", "blackout"),
+    "ghost mode": ("👻", "MODE FANTÔME", "Tu deviens presque invisible... Bouuuuuh !", "ghost"),
+    "earthquake": ("🌋", "TREMBLEMENT DE TERRE !", "Secousse virtuelle détectée. Aucun clavier n'a été blessé.", "earthquake"),
+    "portal": ("🌀", "PORTAIL DIMENSIONNEL", "Un portail vers la dimension secrète de Fauxgle vient de s'ouvrir.", "portal"),
+    "disco": ("🪩", "DISCO FEVER !", "Monte le son : Fauxgle est en soirée !", "disco"),
+    "tsunami": ("🌊", "VAGUE GÉANTE !", "Une vague de résultats déferle sur ton écran.", "flood"),
+    "miroir": ("🪞", "MODE MIROIR", "Lis cette phrase dans le reflet. C'est plus compliqué que prévu !", "mirror"),
+    "tornade": ("🌪️", "TORNADE !", "Tout tourbillonne dans le moteur.", "tornado"),
+    "fire mode": ("🔥", "ÇA CHAUFFE !", "Fauxgle passe en mode volcan. Ton appareil reste bien au frais.", "fire"),
+    "freeze": ("🧊", "MODE GLACIER", "Un vent polaire souffle sur la page.", "ice"),
+    "retro": ("👾", "MODE RÉTRO 8-BITS", "Retour à l'époque des pixels et des vieux jeux.", "pixel"),
+    "alerte": ("🚨", "ALERTE ROUGE !", "Ceci est un exercice. Le serveur va parfaitement bien.", "alert"),
+    "levitation": ("🪄", "LÉVITATION !", "La page défie la gravité. Même les recherches peuvent voler.", "float"),
+    "black hole": ("🕳️", "TROU NOIR", "Tout est attiré vers le centre... sauf le bouton retour.", "vortex"),
+    "confetti": ("🎊", "SURPRISE !!!", "Des confettis virtuels pour célébrer ta découverte !", "confetti"),
+    "shockwave": ("💫", "ONDE DE CHOC", "Une onde spéciale traverse Fauxgle.", "shockwave"),
+    "moonwalk": ("🕺", "MOONWALK !", "Fauxgle glisse comme une légende de la danse.", "moonwalk"),
+    "matrix rain": ("💚", "PLUIE DE CODE", "Les lignes de code défilent dans la dimension verte.", "matrixrain"),
+    "panic": ("😱", "PANIIIIQUE !", "Tout va bien. C'est juste Fauxgle qui fait son cinéma.", "alert"),
+    "party": ("🥳", "FÊTE SUR FAUXGLE !", "Tu as trouvé le bouton secret de la fête. Enfin... la recherche secrète !", "disco"),
+    "gravity": ("🪂", "GRAVITÉ DÉSACTIVÉE", "La page flotte quelques instants dans l'espace.", "float"),
+    "supernova": ("💥", "SUPERNOVA !", "Une étoile vient d'exploser dans l'univers Fauxgle.", "fire"),
+    "glacier": ("❄️", "TEMPÊTE DE GLACE", "Fauxgle a besoin d'une grosse écharpe.", "ice"),
+    "dimension": ("🚪", "AUTRE DIMENSION", "Tu viens de franchir une porte secrète.", "portal"),
+}
+
+
+# Alias pour les commandes d'effets spéciaux.
+SPECIAL_EGGS.update({
+    "explosion": SPECIAL_EGGS["supernova"],
+    "boum": SPECIAL_EGGS["supernova"],
+    "arc en ciel": SPECIAL_EGGS["rainbow"],
+    "arc-en-ciel": SPECIAL_EGGS["rainbow"],
+    "tremblement": SPECIAL_EGGS["earthquake"],
+    "seisme": SPECIAL_EGGS["earthquake"],
+    "séisme": SPECIAL_EGGS["earthquake"],
+    "feu": SPECIAL_EGGS["fire mode"],
+    "glace": SPECIAL_EGGS["freeze"],
+    "fête": SPECIAL_EGGS["party"],
+    "fete": SPECIAL_EGGS["party"],
+    "trou noir": SPECIAL_EGGS["black hole"],
+    "pluie de code": SPECIAL_EGGS["matrix rain"],
+})
+
 def render_message(title, emoji, heading, message, body_class=""):
     return render_template_string(
         MESSAGE_TEMPLATE, style=BASE_STYLE, title=title, emoji=emoji,
@@ -375,7 +517,13 @@ def search():
     if not query:
         return render_template_string(HOME_TEMPLATE, style=BASE_STYLE)
 
-    normalized = " ".join(query.casefold().split())
+    def normalize_search(value):
+        value = unicodedata.normalize("NFKD", value.casefold())
+        value = "".join(ch for ch in value if not unicodedata.combining(ch))
+        value = re.sub(r"[^a-z0-9]+", " ", value)
+        return " ".join(value.split())
+
+    normalized = normalize_search(query)
 
     # Easter eggs spéciaux
     if normalized == "google":
@@ -410,8 +558,20 @@ def search():
             "Mode patron", "👑", "Bienvenue, grand patron !",
             "Accès royal accordé. Longue vie à Fauxgle."
         )
-    if normalized in EASTER_EGGS:
-        emoji, heading, message = EASTER_EGGS[normalized]
+    special_match = next(
+        (value for key, value in SPECIAL_EGGS.items()
+         if normalize_search(key) == normalized), None
+    )
+    if special_match is not None:
+        emoji, heading, message, effect_class = special_match
+        return render_message(query, emoji, heading, message, effect_class)
+
+    easter_match = next(
+        (value for key, value in EASTER_EGGS.items()
+         if normalize_search(key) == normalized), None
+    )
+    if easter_match is not None:
+        emoji, heading, message = easter_match
         return render_message(query, emoji, heading, message)
 
     if not check_rate_limit():
